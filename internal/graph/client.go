@@ -7,14 +7,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"time"
 )
 
 const productionBaseURL = "https://graph.microsoft.com/v1.0"
 
 type Client struct {
-	http    *http.Client
-	token   string
-	baseURL string
+	httpClient *http.Client
+	token      string
+	baseURL    string
 }
 
 func New(token string) *Client {
@@ -23,9 +25,9 @@ func New(token string) *Client {
 
 func newWithBaseURL(token, baseURL string) *Client {
 	return &Client{
-		http:    &http.Client{},
-		token:   token,
-		baseURL: baseURL,
+		httpClient: &http.Client{Timeout: 30 * time.Second},
+		token:      token,
+		baseURL:    baseURL,
 	}
 }
 
@@ -42,7 +44,7 @@ func (c *Client) GetMe(ctx context.Context) (*User, error) {
 }
 
 func (c *Client) GetUserByEmail(ctx context.Context, email string) (*User, error) {
-	return c.getUser(ctx, c.baseURL+"/users/"+email)
+	return c.getUser(ctx, c.baseURL+"/users/"+url.PathEscape(email))
 }
 
 func (c *Client) getUser(ctx context.Context, url string) (*User, error) {
@@ -52,7 +54,7 @@ func (c *Client) getUser(ctx context.Context, url string) (*User, error) {
 	}
 	c.setHeaders(req)
 
-	resp, err := c.http.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -73,12 +75,12 @@ func (c *Client) CreateOrGetChat(ctx context.Context, senderID, recipientID stri
 			{
 				"@odata.type":     "#microsoft.graph.aadUserConversationMember",
 				"roles":           []string{"owner"},
-				"user@odata.bind": fmt.Sprintf("https://graph.microsoft.com/v1.0/users/%s", senderID),
+				"user@odata.bind": fmt.Sprintf("%s/users/%s", c.baseURL, senderID),
 			},
 			{
 				"@odata.type":     "#microsoft.graph.aadUserConversationMember",
 				"roles":           []string{"owner"},
-				"user@odata.bind": fmt.Sprintf("https://graph.microsoft.com/v1.0/users/%s", recipientID),
+				"user@odata.bind": fmt.Sprintf("%s/users/%s", c.baseURL, recipientID),
 			},
 		},
 	}
@@ -94,7 +96,7 @@ func (c *Client) CreateOrGetChat(ctx context.Context, senderID, recipientID stri
 	}
 	c.setHeaders(req)
 
-	resp, err := c.http.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +130,7 @@ func (c *Client) SendMessage(ctx context.Context, chatID, message string) error 
 	}
 	c.setHeaders(req)
 
-	resp, err := c.http.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}

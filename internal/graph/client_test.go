@@ -65,18 +65,17 @@ func TestGetUserByEmail_NotFound(t *testing.T) {
 }
 
 func TestCreateOrGetChat(t *testing.T) {
-	client := newTestClient(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	var capturedBody map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/chats" || r.Method != http.MethodPost {
 			t.Errorf("unexpected %s %s", r.Method, r.URL.Path)
 		}
-		var body map[string]any
-		json.NewDecoder(r.Body).Decode(&body)
-		if body["chatType"] != "oneOnOne" {
-			t.Errorf("chatType = %v; want oneOnOne", body["chatType"])
-		}
+		json.NewDecoder(r.Body).Decode(&capturedBody)
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(Chat{ID: "chat-id-789"})
 	}))
+	defer srv.Close()
+	client := newWithBaseURL("test-token", srv.URL)
 
 	chat, err := client.CreateOrGetChat(context.Background(), "sender-id-123", "recipient-id-456")
 	if err != nil {
@@ -84,6 +83,21 @@ func TestCreateOrGetChat(t *testing.T) {
 	}
 	if chat.ID != "chat-id-789" {
 		t.Errorf("ID = %q; want chat-id-789", chat.ID)
+	}
+	if capturedBody["chatType"] != "oneOnOne" {
+		t.Errorf("chatType = %v; want oneOnOne", capturedBody["chatType"])
+	}
+	members, ok := capturedBody["members"].([]interface{})
+	if !ok || len(members) != 2 {
+		t.Fatalf("members = %v; want array of 2", capturedBody["members"])
+	}
+	m0 := members[0].(map[string]interface{})
+	m1 := members[1].(map[string]interface{})
+	if want := srv.URL + "/users/sender-id-123"; m0["user@odata.bind"] != want {
+		t.Errorf("member[0] bind = %v; want %v", m0["user@odata.bind"], want)
+	}
+	if want := srv.URL + "/users/recipient-id-456"; m1["user@odata.bind"] != want {
+		t.Errorf("member[1] bind = %v; want %v", m1["user@odata.bind"], want)
 	}
 }
 
