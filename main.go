@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/wstevenson/msteams-cli/cmd"
+	"github.com/wstevenson1/msteams-cli/cmd"
 )
 
 func main() {

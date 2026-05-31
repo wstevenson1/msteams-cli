@@ -1,4 +1,4 @@
-module github.com/wstevenson/msteams-cli
+module github.com/wstevenson1/msteams-cli
 
 go 1.26.2
 

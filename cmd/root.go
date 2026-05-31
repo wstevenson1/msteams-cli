@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/wstevenson/msteams-cli/internal/config"
+	"github.com/wstevenson1/msteams-cli/internal/config"
 )
 
 var clientID string

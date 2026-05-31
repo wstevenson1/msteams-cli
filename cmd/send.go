@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/wstevenson/msteams-cli/internal/auth"
-	"github.com/wstevenson/msteams-cli/internal/config"
-	"github.com/wstevenson/msteams-cli/internal/graph"
+	"github.com/wstevenson1/msteams-cli/internal/auth"
+	"github.com/wstevenson1/msteams-cli/internal/config"
+	"github.com/wstevenson1/msteams-cli/internal/graph"
 )
 
 func newSendCmd() *cobra.Command {
