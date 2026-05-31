@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 )
@@ -24,7 +25,7 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	data, err := os.ReadFile(filepath.Join(dir, "config.json"))
-	if os.IsNotExist(err) {
+	if errors.Is(err, os.ErrNotExist) {
 		return &Config{}, nil
 	}
 	if err != nil {

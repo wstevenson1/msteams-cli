@@ -51,3 +51,18 @@ func TestConfigFilePermissions(t *testing.T) {
 		t.Errorf("config.json permissions = %04o; want 0600", perm)
 	}
 }
+
+func TestConfigDirPermissions(t *testing.T) {
+	useTempHome(t)
+	if err := Save(&Config{ClientID: "x"}); err != nil {
+		t.Fatal(err)
+	}
+	dir, _ := Dir()
+	info, err := os.Stat(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if perm := info.Mode().Perm(); perm != 0700 {
+		t.Errorf("config dir permissions = %04o; want 0700", perm)
+	}
+}
