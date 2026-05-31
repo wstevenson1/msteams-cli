@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go mod *)",
+      "Bash(unset GOROOT GOPATH)",
+      "Bash(git commit *)",
+      "Bash(go test *)",
+      "Bash(GOROOT=/opt/local/lib/go go test *)",
+      "Bash(git -C * diff *)",
+      "Bash(git -C * log *)",
+      "Bash(git -C * rev-parse *)"
+    ]
+  }
+}
